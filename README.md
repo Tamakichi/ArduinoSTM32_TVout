@@ -35,7 +35,7 @@ PB9: PWM単音信号
 - [ArduinoSTM32_TNTSC](https://github.com/Tamakichi/ArduinoSTM32_TNTSC)を別途インストールする.  
 - [Arduino(ATmega328)版 ビデオ出力ライブラリTVout](https://github.com/Avamander/arduino-tvout/)をインストールする.  
   だだし利用するのはTVoutfontsのみ.  
-- TTvoutフォルダを各自のArduino STM32インストール先のライブラリ用フォルダに配置する.  
+- TTVoutフォルダを各自のArduino STM32インストール先のライブラリ用フォルダに配置する.  
   (インストールフォルダ\hardware\Arduino_STM32\STM32F1\libraries\ に配置)  
 - Arduino(ATmega328)版 TVoutを別途インストール
 
