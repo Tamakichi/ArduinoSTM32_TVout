@@ -35,14 +35,13 @@ PB9: PWM単音信号
 - [ArduinoSTM32_TNTSC](https://github.com/Tamakichi/ArduinoSTM32_TNTSC)を別途インストールする.  
 - [Arduino(ATmega328)版 ビデオ出力ライブラリTVout](https://github.com/Avamander/arduino-tvout/)をインストールする.  
   だだし利用するのはTVoutfontsのみ.  
-- TTvoutフォルダを各自のArduino STM32インストール先のライブラリ用フォルダに配置する.    
+- TTvoutフォルダを各自のArduino STM32インストール先のライブラリ用フォルダに配置する.  
   (インストールフォルダ\hardware\Arduino_STM32\STM32F1\libraries\ に配置)  
 - Arduino(ATmega328)版 TVoutを別途インストール
 
 ## オリジナルTVoutとの非互換部分
 - PAL形式は未サポートです.  
-- 解像度およびその指定方法が異なります.  
- begin()関数にて次の解像度を指定します.    
+- 解像度およびその指定方法が異なります.begin()関数にて次の解像度を指定します.    
 
  mode|横ドット数|縦ドット数|使用メモリサイズ(バイト)
  :---:|--------:|--------:|---------------------:|
@@ -59,4 +58,4 @@ PB9: PWM単音信号
  - void set_vbi_hook(void (*func)());  
  - void set_hbi_hook(void (*func)());  
 
- - 描画関数の座標指定の引数の型はuint16_tからint16_tに変更しています.
+- 描画関数の座標指定の引数の型はuint16_tからint16_tに変更しています.
