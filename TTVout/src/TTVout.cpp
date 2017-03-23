@@ -39,6 +39,7 @@
 // 修正日 2017/02/27 描画処理にビットバンドを利用するように修正
 // 修正日 2017/02/28 draw_circle()のオリジナルの不具合修正
 // 修正日 2017/03/03 TNTSC v2.2対応
+// 修正日 2017/03/24 tone()の初期化不具合修正
 //
 //
 //
@@ -86,7 +87,10 @@ void TTVout::begin(uint8_t mode) {
     init( TNTSC.VRAM(),  // フレームバッファ指定
     	TNTSC.width(),   // 画面横サイズ指定
     	TNTSC.height()   // 画面縦サイズ指定
-     );   
+     );
+	
+	// tone用出力ピンの設定
+	pinMode(pwmOutPin, PWM);
 }
 
 //
