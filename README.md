@@ -9,7 +9,7 @@ STM32F103x系マイコン搭載ボードにてNTSCビデオ出力を行うこと
 
 **(注意)**  
 ・本ライブラリには[ArduinoSTM32_TNTSC](https://github.com/Tamakichi/ArduinoSTM32_TNTSC)の上位レイアのライブラリです.  
-・描画処理を行うには別途上位のライブラリが必要となります。  
+・描画処理を行うには別途下位のライブラリ**ArduinoSTM32_TNTSC**必要となります。  
 ・フォントは含まれていません.Arduino(ATmega328)版 TVoutライブラリ付属のTVoutfontsのインストールが必要です.  
 
 ## ライブラリ名称
