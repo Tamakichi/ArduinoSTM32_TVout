@@ -34,6 +34,8 @@ application as possible.
 // Arduino Stm32用 TTVout(TVout互換ライブラリ) v0.1
 // 修正日 2017/01/12 by たま吉さん, オリジナルTVout.hからの一部流用
 // 修正日 2017/03/03 TNTSC v2.2対応
+// 修正日 2017/04/05 TNTSC v2.3対応(システムクロック48MHz対応)
+// 修正日 2017/04/13 draw_rect,draw_circleの引数の型の変更
 //
 */
 
@@ -67,13 +69,16 @@ class TTVout {
     void init(uint8_t* vram, uint16_t width, uint16_t height) ;
 
   public:
-    void begin(uint8_t mode=SC_224x216);
+    void begin(uint8_t mode=SC_DEFAULT);
     uint8_t hres();
     uint8_t vres();
     uint8_t* VRAM();
     
     char char_line();
 
+	void setCurPos(uint16_t x, uint16_t y);
+	void showCur(uint8_t flg);
+	
     void delay(uint32_t x);
     void delay_frame(uint16_t x);
     unsigned long millis();
@@ -87,9 +92,11 @@ class TTVout {
     void draw_column(int16_t row, int16_t y0, int16_t y1, uint8_t c);
     void fill(uint8_t color);
     void shift(uint8_t distance, uint8_t direction);
-    void draw_rect(int16_t x0, int16_t y0, int16_t w, int16_t h, char c, char fc = -1); 
-    void draw_circle(int16_t x0, int16_t y0, int16_t radius, char c, char fc = -1);
+    void draw_rect(int16_t x0, int16_t y0, int16_t w, int16_t h, uint8_t c, int8_t fc = -1); 
+    void draw_circle(int16_t x0, int16_t y0, int16_t radius, uint8_t c, int8_t fc = -1);
     void bitmap(uint16_t x, uint16_t y, const unsigned char * bmp, uint16_t i = 0, uint16_t width = 0, uint16_t lines = 0);
+	void bitmap8(uint8_t x, uint8_t y, const unsigned char * bmp, uint16_t i = 0, uint8_t width = 0, uint8_t lines = 0) 
+		 { bitmap((uint8_t)x,(uint8_t)y,bmp,i,width,lines); };
 
     void tone(uint16_t frequency, uint16_t duration_ms=0);
     void noTone();
