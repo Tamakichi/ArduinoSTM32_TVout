@@ -41,6 +41,8 @@
 // 修正日 2017/03/03 TNTSC v2.2対応
 // 修正日 2017/03/24 tone()の初期化不具合修正,PWM初期化処理追加
 // 修正日 2017/04/13 draw_rect,draw_circleの引数の型の変更,48MHz対応のための修正
+// 修正日 2017/04/26 draw_rectのオリジナル版の不具合対応
+// 修正日 2017/04/26 print系の座標引数型をuint8_tからuint16_tに変更
 //
 //
 //
@@ -105,14 +107,6 @@ void TTVout::init(uint8_t* vram, uint16_t width, uint16_t height) {
   _hres   = _width/8;
   _vres   = _height;
   _adr = (volatile uint32_t*)(BB_SRAM_BASE + ((uint32_t)_screen - BB_SRAM_REF) * 32);
-}
-
-void TTVout::setCurPos(uint16_t x, uint16_t y) {
-	TNTSC.setCurPos(x,y);
-}
-
-void TTVout::showCur(uint8_t flg) {
-	TNTSC.showCur(flg);
 }
 
 
@@ -332,8 +326,8 @@ void TTVout::draw_column(int16_t row, int16_t y0, int16_t y1, uint8_t c) {
 // 矩形描画
 void TTVout::draw_rect(int16_t x0, int16_t y0, int16_t w, int16_t h, uint8_t c, int8_t fc) {
   if (fc != -1) {
-    for (unsigned char i = y0; i < y0+h; i++)
-      draw_row(i,x0,x0+w,fc);
+    for (int16_t i = y0; i < y0+h; i++)
+      draw_row(i,x0,x0+w,c);
   }
   draw_line(x0,y0,x0+w,y0,c);
   draw_line(x0,y0,x0,y0+h,c);
@@ -690,7 +684,7 @@ void TTVout::printPGM(const char str[]) {
   }
 }
 
-void TTVout::printPGM(uint8_t x, uint8_t y, const char str[]) {
+void TTVout::printPGM(uint16_t x, uint16_t y, const char str[]) {
   char c;
   _cursor_x = x; _cursor_y = y;
 //  while ((c = pgm_read_byte(str))) {
@@ -700,87 +694,87 @@ void TTVout::printPGM(uint8_t x, uint8_t y, const char str[]) {
   }
 }
 
-void TTVout::set_cursor(uint8_t x, uint8_t y) {
+void TTVout::set_cursor(uint16_t x, uint16_t y) {
   _cursor_x = x; _cursor_y = y;
 }
 
-void TTVout::print(uint8_t x, uint8_t y, const char str[]) {
+void TTVout::print(uint16_t x, uint16_t y, const char str[]) {
   _cursor_x = x;  _cursor_y = y;
   write(str);
 }
 
-void TTVout::print(uint8_t x, uint8_t y, char c, int base) {
+void TTVout::print(uint16_t x, uint16_t y, char c, int base) {
   _cursor_x = x;  _cursor_y = y;
   print((long) c, base);
 }
 
-void TTVout::print(uint8_t x, uint8_t y, unsigned char b, int base) {
+void TTVout::print(uint16_t x, uint16_t y, unsigned char b, int base) {
   _cursor_x = x;  _cursor_y = y;
   print((unsigned long) b, base);
 }
 
 
-void TTVout::print(uint8_t x, uint8_t y, int n, int base) {
+void TTVout::print(uint16_t x, uint16_t y, int n, int base) {
   _cursor_x = x;  _cursor_y = y;
   print((long) n, base);
 }
 
-void TTVout::print(uint8_t x, uint8_t y, unsigned int n, int base) {
+void TTVout::print(uint16_t x, uint16_t y, unsigned int n, int base) {
   _cursor_x = x;  _cursor_y = y;
   print((unsigned long) n, base);
 }
 
-void TTVout::print(uint8_t x, uint8_t y, long n, int base) {
+void TTVout::print(uint16_t x, uint16_t y, long n, int base) {
   _cursor_x = x;  _cursor_y = y;
   print(n,base);
 }
 
-void TTVout::print(uint8_t x, uint8_t y, unsigned long n, int base) {
+void TTVout::print(uint16_t x, uint16_t y, unsigned long n, int base) {
   _cursor_x = x;  _cursor_y = y;
   print(n,base);
 }
 
-void TTVout::print(uint8_t x, uint8_t y, double n, int digits) {
+void TTVout::print(uint16_t x, uint16_t y, double n, int digits) {
   _cursor_x = x;  _cursor_y = y;
   print(n,digits);
 }
 
-void TTVout::println(uint8_t x, uint8_t y, const char c[]){
+void TTVout::println(uint16_t x, uint16_t y, const char c[]){
   _cursor_x = x;  _cursor_y = y;
   print(c);  println();
 }
 
-void TTVout::println(uint8_t x, uint8_t y, char c, int base){
+void TTVout::println(uint16_t x, uint16_t y, char c, int base){
   _cursor_x = x;  _cursor_y = y;
   print(c, base);  println();
 }
 
-void TTVout::println(uint8_t x, uint8_t y, unsigned char b, int base){
+void TTVout::println(uint16_t x, uint16_t y, unsigned char b, int base){
   _cursor_x = x;  _cursor_y = y;
   print(b, base);  println();
 }
 
-void TTVout::println(uint8_t x, uint8_t y, int n, int base){
+void TTVout::println(uint16_t x, uint16_t y, int n, int base){
   _cursor_x = x;  _cursor_y = y;
   print(n, base);  println();
 }
 
-void TTVout::println(uint8_t x, uint8_t y, unsigned int n, int base){
+void TTVout::println(uint16_t x, uint16_t y, unsigned int n, int base){
   _cursor_x = x;  _cursor_y = y;
   print(n, base);  println();
 }
 
-void TTVout::println(uint8_t x, uint8_t y, long n, int base){
+void TTVout::println(uint16_t x, uint16_t y, long n, int base){
   _cursor_x = x;  _cursor_y = y;
   print(n, base);  println();
 }
 
-void TTVout::println(uint8_t x, uint8_t y, unsigned long n, int base){
+void TTVout::println(uint16_t x, uint16_t y, unsigned long n, int base){
   _cursor_x = x; _cursor_y = y;
   print(n, base); println();
 }
 
-void TTVout::println(uint8_t x, uint8_t y, double n, int digits){
+void TTVout::println(uint16_t x, uint16_t y, double n, int digits){
   _cursor_x = x;  _cursor_y = y;
   print(n, digits);  println();
 }

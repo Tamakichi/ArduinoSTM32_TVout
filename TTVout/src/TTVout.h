@@ -36,6 +36,7 @@ application as possible.
 // 修正日 2017/03/03 TNTSC v2.2対応
 // 修正日 2017/04/05 TNTSC v2.3対応(システムクロック48MHz対応)
 // 修正日 2017/04/13 draw_rect,draw_circleの引数の型の変更
+// 修正日 2017/04/26 print系の座標引数型をuint8_tからuint16_tに変更
 //
 */
 
@@ -76,8 +77,6 @@ class TTVout {
     
     char char_line();
 
-	void setCurPos(uint16_t x, uint16_t y);
-	void showCur(uint8_t flg);
 	
     void delay(uint32_t x);
     void delay_frame(uint16_t x);
@@ -103,7 +102,7 @@ class TTVout {
 
     void print_char(uint16_t x, uint16_t y, uint8_t c); // 
     
-    void set_cursor(uint8_t, uint8_t);
+    void set_cursor(uint16_t, uint16_t);
     void select_font(const unsigned char * f);
 
     void write(uint8_t);
@@ -119,24 +118,24 @@ class TTVout {
     void print(unsigned long, int = DEC);
     void print(double, int = 2);
 
-    void print(uint8_t x, uint8_t y, const char str[]);
-    void print(uint8_t x, uint8_t y, char c, int base) ;
-    void print(uint8_t x, uint8_t y, unsigned char b, int base);
-    void print(uint8_t x, uint8_t y, int n, int base) ;
-    void print(uint8_t x, uint8_t y, unsigned int n, int base) ;
-    void print(uint8_t x, uint8_t y, long n, int base);
-    void print(uint8_t x, uint8_t y, unsigned long n, int base);
-    void print(uint8_t x, uint8_t y, double n, int digits);
+    void print(uint16_t x, uint16_t y, const char str[]);
+    void print(uint16_t x, uint16_t y, char c, int base) ;
+    void print(uint16_t x, uint16_t y, unsigned char b, int base);
+    void print(uint16_t x, uint16_t y, int n, int base) ;
+    void print(uint16_t x, uint16_t y, unsigned int n, int base) ;
+    void print(uint16_t x, uint16_t y, long n, int base);
+    void print(uint16_t x, uint16_t y, unsigned long n, int base);
+    void print(uint16_t x, uint16_t y, double n, int digits);
 
-    void println(uint8_t, uint8_t, const char[]);
-    void println(uint8_t, uint8_t, char, int = BYTE);
-    void println(uint8_t, uint8_t, unsigned char, int = BYTE);
-    void println(uint8_t, uint8_t, int, int = DEC);
-    void println(uint8_t, uint8_t, unsigned int, int = DEC);
-    void println(uint8_t, uint8_t, long, int = DEC);
-    void println(uint8_t, uint8_t, unsigned long, int = DEC);
-    void println(uint8_t, uint8_t, double, int = 2);
-    void println(uint8_t, uint8_t);
+    void println(uint16_t, uint16_t, const char[]);
+    void println(uint16_t, uint16_t, char, int = BYTE);
+    void println(uint16_t, uint16_t, unsigned char, int = BYTE);
+    void println(uint16_t, uint16_t, int, int = DEC);
+    void println(uint16_t, uint16_t, unsigned int, int = DEC);
+    void println(uint16_t, uint16_t, long, int = DEC);
+    void println(uint16_t, uint16_t, unsigned long, int = DEC);
+    void println(uint16_t, uint16_t, double, int = 2);
+    void println(uint16_t, uint16_t);
 
     void println(const char[]);
     void println(char, int = BYTE);
@@ -149,7 +148,7 @@ class TTVout {
     void println(void);
   
     void printPGM(const char[]);
-    void printPGM(uint8_t, uint8_t, const char[]);
+    void printPGM(uint16_t, uint16_t, const char[]);
       
     void cls() ;
 
