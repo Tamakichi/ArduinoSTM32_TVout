@@ -37,6 +37,7 @@ application as possible.
 // 修正日 2017/04/05 TNTSC v2.3対応(システムクロック48MHz対応)
 // 修正日 2017/04/13 draw_rect,draw_circleの引数の型の変更
 // 修正日 2017/04/26 print系の座標引数型をuint8_tからuint16_tに変更
+// 更新日 2017/04/30, SPI1,SPI2の選択指定を可能に修正
 //
 */
 
@@ -70,7 +71,7 @@ class TTVout {
     void init(uint8_t* vram, uint16_t width, uint16_t height) ;
 
   public:
-    void begin(uint8_t mode=SC_DEFAULT);
+    void begin(uint8_t mode=SC_DEFAULT,uint8_t spino = 1);
     uint8_t hres();
     uint8_t vres();
     uint8_t* VRAM();

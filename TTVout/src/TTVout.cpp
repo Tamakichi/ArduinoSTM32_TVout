@@ -43,6 +43,9 @@
 // 修正日 2017/04/13 draw_rect,draw_circleの引数の型の変更,48MHz対応のための修正
 // 修正日 2017/04/26 draw_rectのオリジナル版の不具合対応
 // 修正日 2017/04/26 print系の座標引数型をuint8_tからuint16_tに変更
+// 更新日 2017/04/30 SPI1,SPI2の選択指定を可能に修正
+// 更新日 2017/05/10 draw_rectの不具合対応
+// 更新日 2017/05/10 toneのクロック48MHz対応
 //
 //
 //
@@ -85,8 +88,8 @@ short tone_freq = 444;      // tone frequency (0=pause)
 
 
 // TTVout利用開始
-void TTVout::begin(uint8_t mode) {
-    TNTSC.begin(mode);   // NTSCビデオ出力開始
+void TTVout::begin(uint8_t mode, uint8_t spino) {
+    TNTSC.begin(mode, spino);   // NTSCビデオ出力開始
     init( TNTSC.VRAM(),  // フレームバッファ指定
     	TNTSC.width(),   // 画面横サイズ指定
     	TNTSC.height()   // 画面縦サイズ指定
@@ -325,14 +328,28 @@ void TTVout::draw_column(int16_t row, int16_t y0, int16_t y1, uint8_t c) {
 
 // 矩形描画
 void TTVout::draw_rect(int16_t x0, int16_t y0, int16_t w, int16_t h, uint8_t c, int8_t fc) {
-  if (fc != -1) {
-    for (int16_t i = y0; i < y0+h; i++)
-      draw_row(i,x0,x0+w,c);
-  }
-  draw_line(x0,y0,x0+w,y0,c);
-  draw_line(x0,y0,x0,y0+h,c);
-  draw_line(x0+w,y0,x0+w,y0+h,c);
-  draw_line(x0,y0+h,x0+w,y0+h,c);
+	if (fc == -1) {
+		w--;
+		h--;
+		if (w == 0 && h == 0) {
+			 set_pixel(x0,y0,c);
+		} else if (w == 0 || h == 0) {
+			draw_line(x0,y0,x0+w,y0+h,c);
+		} else {
+		   // 水平線
+   		   draw_line(x0,y0  , x0+w, y0  , c);
+   		   draw_line(x0,y0+h, x0+w, y0+h, c);
+		   // 垂直線
+		   if (h>1) {	
+	         draw_line(x0,  y0+1,x0  ,y0+h-1,c);
+	         draw_line(x0+w,y0+1,x0+w,y0+h-1,c);
+		   }
+		}
+	} else {
+		for (int16_t i = y0; i < y0+h; i++) {
+          draw_row(i,x0,x0+w,c);
+		}
+	}
 }
 
 // 円の描画
@@ -845,8 +862,12 @@ void TTVout::tone(uint16_t freq, uint16_t duration) {
     noTone();
   } else {
     uint32_t f =1000000/(uint16_t)freq;
-    Timer4.setPrescaleFactor(72); // システムクロックを1/72に分周
-    Timer4.setOverflow(f);
+#if F_CPU == 72000000L
+  	Timer4.setPrescaleFactor(72); // システムクロックを1/72に分周
+#else if  F_CPU == 48000000L
+  	Timer4.setPrescaleFactor(48); // システムクロックを1/48に分周
+#endif
+  	Timer4.setOverflow(f);
     Timer4.refresh();
     Timer4.resume(); 
     pwmWrite(pwmOutPin, f/2);  
