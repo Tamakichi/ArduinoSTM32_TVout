@@ -46,7 +46,7 @@
 // 更新日 2017/04/30 SPI1,SPI2の選択指定を可能に修正
 // 更新日 2017/05/10 draw_rectの不具合対応
 // 更新日 2017/05/10 toneのクロック48MHz対応
-//
+// 更新日 2017/05/10 draw_circleの不具合対応
 //
 //
 // ※このプログラムソースの一部は、 Myles Metzers氏作成が作成、Avamanderが修正公開している
@@ -365,7 +365,7 @@ void TTVout::draw_circle(int16_t x0, int16_t y0, int16_t radius, uint8_t c, int8
   //there is a fill color
 
   if (fc != -1)
-    draw_row(y0,x0-radius,x0+radius,fc);
+    draw_row(y0,x0-radius,x0+radius,c);
   
   set_pixel(x0, y0 + radius,c);
   set_pixel(x0, y0 - radius,c);
@@ -387,13 +387,13 @@ void TTVout::draw_circle(int16_t x0, int16_t y0, int16_t radius, uint8_t c, int8
     if (fc != -1) {
       //prevent double draws on the same rows
       if (pyy != y) {
-        draw_row(y0+y,x0-x,x0+x,fc);
-        draw_row(y0-y,x0-x,x0+x,fc);
+        draw_row(y0+y,x0-x,x0+x,c);
+        draw_row(y0-y,x0-x,x0+x,c);
       }
     	
       if (pyx != x && x != y) {
-        draw_row(y0+x,x0-y,x0+y,fc);
-        draw_row(y0-x,x0-y,x0+y,fc);
+        draw_row(y0+x,x0-y,x0+y,c);
+        draw_row(y0-x,x0-y,x0+y,c);
       }
 
       pyy = y;
