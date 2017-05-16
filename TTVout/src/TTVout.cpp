@@ -47,6 +47,7 @@
 // 更新日 2017/05/10 draw_rectの不具合対応
 // 更新日 2017/05/10 toneのクロック48MHz対応
 // 更新日 2017/05/10 draw_circleの不具合対応
+// 更新日 2017/05/16 toneの停止時、HIGHとなる不具合を対応
 //
 //
 // ※このプログラムソースの一部は、 Myles Metzers氏作成が作成、Avamanderが修正公開している
@@ -874,6 +875,7 @@ void TTVout::tone(uint16_t freq, uint16_t duration) {
     if (duration) {
       delay(duration);
       Timer4.pause(); 
+      Timer4.setCount(0xffff);
     }
   }
 }
@@ -884,6 +886,7 @@ void TTVout::tone(uint16_t freq, uint16_t duration) {
 // pin     : PWM出力ピン (現状はPB9固定)
 //
 void TTVout::noTone() {
-    Timer4.pause();  
+    Timer4.pause();
+	Timer4.setCount(0xffff);
 }
 
