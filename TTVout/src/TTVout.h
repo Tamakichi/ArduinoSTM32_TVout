@@ -39,6 +39,7 @@ application as possible.
 // 修正日 2017/04/26 print系の座標引数型をuint8_tからuint16_tに変更
 // 更新日 2017/04/30, SPI1,SPI2の選択指定を可能に修正
 // 更新日 2017/06/25, NTSCオブジェクトを動的生成に修正,NTSCの外部メモリ領域指定対応
+// 更新日 2017/11/18, hres(),hres()の戻り値をint16_tに変更
 //
 */
 
@@ -63,6 +64,8 @@ application as possible.
 #define BIN 2
 #define BYTE 0
 
+#define BITBAND 1  // ビットバンド機能利用
+
 // Macros for clearer usage
 #define clear_screen()      fill(0)
 #define invert(color)       fill(2)
@@ -72,22 +75,20 @@ class TTVout {
     void init(uint8_t* vram, uint16_t width, uint16_t height) ;
 
   public:
-	TNTSC_class* TNTSC;
+	  TNTSC_class* TNTSC;
 
-	TTVout();   // コンストラクタ
-	~TTVout();  // ディストラクタ
-    void begin(uint8_t mode=SC_DEFAULT,uint8_t spino = 1,uint8_t* extram=NULL);
-	void end();
-    uint8_t hres();
-    uint8_t vres();
-    uint8_t* VRAM();
-    
+  TTVout() {TNTSC= &::TNTSC;} ;      // コンストラクタ
+    ~TTVout() {};                    // デストラクタ
+    void begin(uint8_t mode=SC_DEFAULT,uint8_t spino = 1,uint8_t* extram=NULL); // 利用開始
+    void end() {TNTSC->end();};  // 利用終了
+    void adjust(int16_t cnt) {TNTSC->adjust(cnt);} 
+    uint16_t hres() {return _width;} ;  // 画面横ドット数の取得
+    uint16_t vres() {return _height;} ; // 画面縦ドット数の取得
+    uint8_t* VRAM() {  return _screen;};// VRM先頭アドレス取得
     char char_line();
-
-	
-    void delay(uint32_t x);
+    void delay(uint32_t x) {::delay(x);};  // delay (ミリ秒)
     void delay_frame(uint16_t x);
-    unsigned long millis();
+    unsigned long millis() {return ::millis();} ;
     void setBktmStartHook(void (*func)()); // ブランキング期間開始フック設定
     void setBktmEndHook(void (*func)());   // ブランキング期間終了フック設定
 
@@ -101,7 +102,7 @@ class TTVout {
     void draw_rect(int16_t x0, int16_t y0, int16_t w, int16_t h, uint8_t c, int8_t fc = -1); 
     void draw_circle(int16_t x0, int16_t y0, int16_t radius, uint8_t c, int8_t fc = -1);
     void bitmap(uint16_t x, uint16_t y, const unsigned char * bmp, uint16_t i = 0, uint16_t width = 0, uint16_t lines = 0);
-	void bitmap8(uint8_t x, uint8_t y, const unsigned char * bmp, uint16_t i = 0, uint8_t width = 0, uint8_t lines = 0) 
+	  void bitmap8(uint8_t x, uint8_t y, const unsigned char * bmp, uint16_t i = 0, uint8_t width = 0, uint8_t lines = 0) 
 		 { bitmap((uint8_t)x,(uint8_t)y,bmp,i,width,lines); };
 
     void tone(uint16_t frequency, uint16_t duration_ms=0);
@@ -162,11 +163,37 @@ class TTVout {
     void inc_txtline();
     void printNumber(unsigned long, uint8_t);
     void printFloat(double, uint8_t);
-    
+
+  private:   
+    void sp(uint16_t x, uint16_t y, uint8_t c) {
+    #if BITBAND==1
+      if (c==1)
+        _adr[_width*y+ (x&0xf8) +7 -(x&7)] = 1;
+      else if (c==0)
+        _adr[_width*y+ (x&0xf8) +7 -(x&7)] = 0;
+      else 
+        _adr[_width*y+ (x&0xf8) +7 -(x&7)] ^= 1;
+    #else
+      if (c==1)
+        _screen[(x/8) + (y*_hres)] |= 0x80 >> (x&7);
+      else if (c==0)
+        _screen[(x/8) + (y*_hres)] &= ~0x80 >> (x&7);
+      else
+        _screen[(x/8) + (y*_hres)] ^= 0x80 >> (x&7);
+    #endif
+    }
+  
+  private:    
     uint8_t   _mode;
     uint16_t  _cursor_x;
     uint16_t  _cursor_y;
     const unsigned char * _font;
+    uint8_t* _screen;        // フレームバッファアドレス
+    uint16_t _width;         // 画面横ドット数
+    uint16_t _height;        // 画面縦ドット数
+    uint16_t _hres;          // 横バイト数
+    uint16_t _vres;          // 縦ドット数
+    volatile uint32_t*_adr;  // フレームバッファビットバンドアドレス
 };
 
 #endif

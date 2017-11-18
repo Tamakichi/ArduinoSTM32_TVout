@@ -50,6 +50,7 @@
 // 更新日 2017/05/16 toneの停止時、HIGHとなる不具合を対応
 // 更新日 2017/06/25, NTSCオブジェクトを動的生成に修正,NTSCの外部メモリ領域指定対応
 // 更新日 2017/07/29,shift()のUP処理の不具合（VRAM外への書込み)対応
+// 更新日 2017/11/18, hres(),hres()の戻り値をint16_tに変更
 //
 //
 // ※このプログラムソースの一部は、 Myles Metzers氏作成が作成、Avamanderが修正公開している
@@ -75,31 +76,12 @@
 
 #include <libmaple/bitband.h>
 #include <TTVout.h>
-#define BITBAND 1
 
 const int pwmOutPin = PB9;      // tone用 PWM出力ピン
-static uint8_t* _screen;        // フレームバッファアドレス
-static uint16_t _width;         // 画面横ドット数
-static uint16_t _height;        // 画面縦ドット数
-static uint16_t _hres;          // 横バイト数
-static uint16_t _vres;          // 縦ドット数
-static volatile uint32_t*_adr;  // フレームバッファビットバンドアドレス
 
 // tone用
 short tone_pin = -1;        // pin for outputting sound
 short tone_freq = 444;      // tone frequency (0=pause)
-
-// コンストラクタ
-TTVout::TTVout() {
-	//TNTSC= new TNTSC_class();
-	TNTSC= &::TNTSC;
-}
-
-// ディストラクタ
-TTVout::~TTVout() {
-   //delete TNTSC;
-}
-
 
 // TTVout利用開始
 void TTVout::begin(uint8_t mode, uint8_t spino, uint8_t* extram) {
@@ -126,71 +108,9 @@ void TTVout::init(uint8_t* vram, uint16_t width, uint16_t height) {
   _adr = (volatile uint32_t*)(BB_SRAM_BASE + ((uint32_t)_screen - BB_SRAM_REF) * 32);
 }
 
-
-// 利用終了
-void TTVout::end() {
-	TNTSC->end();
-}
-
-
-//
-// ドット描画
-// 引数
-//  x:横座標
-//  y:縦座標
-//  c:色 0:黒 1:白 それ以外:反転
-//
-static void inline sp(uint16_t x, uint16_t y, uint8_t c) {
-#if BITBAND==1
-  if (c==1)
-    _adr[_width*y+ (x&0xf8) +7 -(x&7)] = 1;
-  else if (c==0)
-    _adr[_width*y+ (x&0xf8) +7 -(x&7)] = 0;
-  else 
-    _adr[_width*y+ (x&0xf8) +7 -(x&7)] ^= 1;
-#else
-  if (c==1)
-    _screen[(x/8) + (y*_hres)] |= 0x80 >> (x&7);
-  else if (c==0)
-    _screen[(x/8) + (y*_hres)] &= ~0x80 >> (x&7);
-  else
-    _screen[(x/8) + (y*_hres)] ^= 0x80 >> (x&7);
-#endif
-}
-
-// 画面横ドット数の取得
-uint8_t TTVout::hres() {
-  return _width;
-};
-
-// 画面縦ドット数の取得
-uint8_t TTVout::vres() {
-  return _height;
-};
-
-// 画面横文字数の取得
-char TTVout::char_line() {
-  //return _width / pgm_read_byte(_font);
-  return _width / *_font;
-} 
-
-// delay (ミリ秒)
-void TTVout::delay(uint32_t x) {
-  ::delay(x);
-}
-
-uint8_t* TTVout::VRAM() {
-  return _screen;
-}
-
 // フレーム間待ち
 void TTVout::delay_frame(uint16_t x) {
   TNTSC->delay_frame(x);
-}
-
-// 起動からの時間（ミリ秒)取得
-uint32_t TTVout::millis() {
-  return ::millis();
 }
 
 // ブランキング期間開始フック設定
@@ -217,7 +137,9 @@ void TTVout::cls() {
 
 // 直線を引く
 template <typename T> int _v_sgn(T val) {return (T(0) < val) - (val < T(0));}
+#ifndef abs
 #define abs(a)  (((a)>0) ? (a) : -(a))
+#endif
 #define swap(a,b) tmp =a;a=b;b=tmp
 void TTVout::draw_line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t dt){
    int dx=abs(x1-x0), dy=abs(y1-y0),sx=_v_sgn(x1-x0),sy=_v_sgn(y1-y0);
@@ -440,12 +362,10 @@ void TTVout::bitmap(uint16_t x, uint16_t y, const unsigned char * bmp,
   rshift = x&7;
   lshift = 8-rshift;
   if (width == 0) {
-    //width = pgm_read_byte((uint32_t)(bmp) + i);
   	width = *(bmp + i);
     i++;
   }
   if (lines == 0) {
-    //lines = pgm_read_byte((uint32_t)(bmp) + i);
     lines = *(bmp + i);
     i++;
   }
@@ -468,13 +388,11 @@ void TTVout::bitmap(uint16_t x, uint16_t y, const unsigned char * bmp,
       temp = 0;
     save = _screen[si];
     _screen[si] &= ((0xff << lshift) | temp);
-//    temp = pgm_read_byte((uint32_t)(bmp) + i++);
   	temp = *(bmp + i++);
     _screen[si++] |= temp >> rshift;
     for ( uint16_t b = i + width-1; i < b; i++) {
       save = _screen[si];
       _screen[si] = temp << lshift;
-//      temp = pgm_read_byte((uint32_t)(bmp) + i);
     	temp = *(bmp + i);
       _screen[si++] |= temp >> rshift;
     }
@@ -498,8 +416,6 @@ void TTVout::shift(uint8_t distance, uint8_t direction) {
       dst = _screen;
       src = _screen + distance*_hres;
       end = _screen + _vres*_hres;
-        
-//      while (src <= end) { 2017/07/29 修正
       while (src <  end) {
         *dst = *src;
         *src = 0;
@@ -574,20 +490,14 @@ void TTVout::select_font(const unsigned char * f) {
 
 // 文字の表示
 void TTVout::print_char(uint16_t x, uint16_t y, uint8_t c) {
-
-//  c -= pgm_read_byte(_font+2);
-//  bitmap(x,y,_font,(c*pgm_read_byte(_font+1))+3,pgm_read_byte(_font),pgm_read_byte(_font+1));
 	c -= *(_font+2);
   bitmap(x, y, _font , c* *(_font+1) + 3, *_font , *(_font+1) );
 }
 
 void TTVout::inc_txtline() {
-//  if (_cursor_y >= (_vres - pgm_read_byte(_font+1)))
-//    shift(pgm_read_byte(_font+1),UP);
   if (_cursor_y >= (_vres - *(_font+1)))
     shift(*(_font+1),UP);
   else
-//    _cursor_y += pgm_read_byte(_font+1);
     _cursor_y += *(_font+1);
 }
 
@@ -610,7 +520,6 @@ void TTVout::write(uint8_t c) {
       inc_txtline();
       break;
     case 8:       //backspace
-//      _cursor_x -= pgm_read_byte(_font);
       _cursor_x -= *_font;
       print_char(_cursor_x,_cursor_y,' ');
       break;
@@ -618,10 +527,8 @@ void TTVout::write(uint8_t c) {
       _cursor_x = 0;
       break;
     case 14:      //form feed new page(clear screen)
-      //clear_screen();
       break;
     default:
-//      if (_cursor_x >= (_hres*8 - pgm_read_byte(_font))) {
       if (_cursor_x >= (_hres*8 - *_font)) {
         _cursor_x = 0;
         inc_txtline();
@@ -629,7 +536,6 @@ void TTVout::write(uint8_t c) {
       }
       else
         print_char(_cursor_x,_cursor_y,c);
-//      _cursor_x += pgm_read_byte(_font);
       _cursor_x += *_font;
   }
 }
@@ -715,7 +621,6 @@ void TTVout::println(double n, int digits) {
 
 void TTVout::printPGM(const char str[]) {
   char c;
-//  while ((c = pgm_read_byte(str))) {
   while (c = *str) {
     str++;
     write(c);
@@ -725,7 +630,6 @@ void TTVout::printPGM(const char str[]) {
 void TTVout::printPGM(uint16_t x, uint16_t y, const char str[]) {
   char c;
   _cursor_x = x; _cursor_y = y;
-//  while ((c = pgm_read_byte(str))) {
   while (c = *str) {
     str++;
     write(c);
@@ -885,7 +789,7 @@ void TTVout::tone(uint16_t freq, uint16_t duration) {
     uint32_t f =1000000/(uint16_t)freq;
 #if F_CPU == 72000000L
   	Timer4.setPrescaleFactor(72); // システムクロックを1/72に分周
-#else if  F_CPU == 48000000L
+#elif  F_CPU == 48000000L
   	Timer4.setPrescaleFactor(48); // システムクロックを1/48に分周
 #endif
   	Timer4.setOverflow(f);
