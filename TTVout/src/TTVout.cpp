@@ -51,6 +51,8 @@
 // 更新日 2017/06/25, NTSCオブジェクトを動的生成に修正,NTSCの外部メモリ領域指定対応
 // 更新日 2017/07/29,shift()のUP処理の不具合（VRAM外への書込み)対応
 // 更新日 2017/11/18, hres(),hres()の戻り値をint16_tに変更
+// 修正日 2018/08/03 draw_rect,draw_circleの反転塗りつぶし処理の不具合対応
+
 //
 //
 // ※このプログラムソースの一部は、 Myles Metzers氏作成が作成、Avamanderが修正公開している
@@ -270,27 +272,26 @@ void TTVout::draw_column(int16_t row, int16_t y0, int16_t y1, uint8_t c) {
 
 // 矩形描画
 void TTVout::draw_rect(int16_t x0, int16_t y0, int16_t w, int16_t h, uint8_t c, int8_t fc) {
-	if (fc == -1) {
-		w--;
-		h--;
-		if (w == 0 && h == 0) {
-			 set_pixel(x0,y0,c);
-		} else if (w == 0 || h == 0) {
-			draw_line(x0,y0,x0+w,y0+h,c);
-		} else {
-		   // 水平線
-   		   draw_line(x0,y0  , x0+w, y0  , c);
-   		   draw_line(x0,y0+h, x0+w, y0+h, c);
-		   // 垂直線
-		   if (h>1) {	
-	         draw_line(x0,  y0+1,x0  ,y0+h-1,c);
-	         draw_line(x0+w,y0+1,x0+w,y0+h-1,c);
-		   }
-		}
+	w--;
+	h--;
+	if (w == 0 && h == 0) {
+		 set_pixel(x0,y0,c);
+	} else if (w == 0 || h == 0) {
+ 	   draw_line(x0,y0,x0+w,y0+h,c);
 	} else {
-		for (int16_t i = y0; i < y0+h; i++) {
-          draw_row(i,x0,x0+w,c);
-		}
+    if (fc != -1) {
+      for (int16_t i = y0; i < y0+h; i++) {
+        draw_row(i,x0,x0+w,fc);
+    	}
+    }
+	  // 水平線
+     draw_line(x0,y0  , x0+w, y0  , c);
+     draw_line(x0,y0+h, x0+w, y0+h, c);
+	  // 垂直線
+     if (h>1) {	
+       draw_line(x0,  y0+1,x0  ,y0+h-1,c);
+       draw_line(x0+w,y0+1,x0+w,y0+h-1,c);
+     }
 	}
 }
 
@@ -306,8 +307,8 @@ void TTVout::draw_circle(int16_t x0, int16_t y0, int16_t radius, uint8_t c, int8
   
   //there is a fill color
 
-  if (fc != -1)
-    draw_row(y0,x0-radius,x0+radius,c);
+  if (fc != -1) 
+    draw_row(y0,x0-radius,x0+radius,fc);
   
   set_pixel(x0, y0 + radius,c);
   set_pixel(x0, y0 - radius,c);
@@ -329,13 +330,13 @@ void TTVout::draw_circle(int16_t x0, int16_t y0, int16_t radius, uint8_t c, int8
     if (fc != -1) {
       //prevent double draws on the same rows
       if (pyy != y) {
-        draw_row(y0+y,x0-x,x0+x,c);
-        draw_row(y0-y,x0-x,x0+x,c);
+        draw_row(y0+y,x0-x,x0+x,fc);
+        draw_row(y0-y,x0-x,x0+x,fc);
       }
     	
       if (pyx != x && x != y) {
-        draw_row(y0+x,x0-y,x0+y,c);
-        draw_row(y0-x,x0-y,x0+y,c);
+        draw_row(y0+x,x0-y,x0+y,fc);
+        draw_row(y0-x,x0-y,x0+y,fc);
       }
 
       pyy = y;

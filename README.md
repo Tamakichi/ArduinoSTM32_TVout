@@ -10,7 +10,7 @@ STM32F103x系マイコン搭載ボードにてNTSCビデオ出力を行うこと
 **(注意)**  
 ・本ライブラリには[ArduinoSTM32_TNTSC](https://github.com/Tamakichi/ArduinoSTM32_TNTSC)の上位レイアのライブラリです.  
 ・描画処理を行うには別途下位のライブラリ**ArduinoSTM32_TNTSC**必要となります。  
-・フォントは含まれていません.Arduino(ATmega328)版 TVoutライブラリ付属のTVoutfontsのインストールが必要です.  
+・フォントは含まれていません.Arduino(ATmega328)版 TVoutライブラリ付属の**TVoutfonts**のインストールが必要です.  
 
 ## ライブラリ名称
 TTVout (ヘッダーファイル TTvout.h)  
@@ -74,11 +74,33 @@ PB9: PWM単音信号
 | SC_512x108 |   512 |   108 |         6,912 |
 | SC_512x216 |   512 |   216 |        13,824 |
 
+- 垂直同期信号の補正
+
+  `void adjust(int16_t cnt);`  
+
+  引数cntは、ブランキング期間の水平走査線数の増減を指定します。  
+  利用するモニターディスプレイがの映像がスクロールする場合 、ブランキング期間の水平走査線数を増やすことで、スクロールを回避できる場合があります。    
+
+     	例：`adjust(2)`  
+
+  映像の下部の崩れたような表示の場合は、ブランキング期間の水平走査線数を減らす、スクロールを回避できる場合があります。   
+
+     	例：`adjust(-2)`   
+
+  指定する値は、状況をみて調整して下さい。  
+
+  
+
 - 次のAPIは未対応です.
+
  - void force_vscale(char sfactor);  
+
  - void force_outstart(uint8_t time);  
+
  - void force_linestart(uint8_t line);  
+
  - void set_vbi_hook(void (*func)());  
+
  - void set_hbi_hook(void (*func)());  
 
 - 描画関数の座標指定の引数の型はuint16_tからint16_tに変更しています.

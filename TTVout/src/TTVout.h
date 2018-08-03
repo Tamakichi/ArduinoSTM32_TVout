@@ -40,6 +40,7 @@ application as possible.
 // 更新日 2017/04/30, SPI1,SPI2の選択指定を可能に修正
 // 更新日 2017/06/25, NTSCオブジェクトを動的生成に修正,NTSCの外部メモリ領域指定対応
 // 更新日 2017/11/18, hres(),hres()の戻り値をint16_tに変更
+// 更新日 2018/08/03, sp()のビットバンド計算ミス修正
 //
 */
 
@@ -77,7 +78,7 @@ class TTVout {
   public:
 	  TNTSC_class* TNTSC;
 
-  TTVout() {TNTSC= &::TNTSC;} ;      // コンストラクタ
+    TTVout() {TNTSC= &::TNTSC;} ;      // コンストラクタ
     ~TTVout() {};                    // デストラクタ
     void begin(uint8_t mode=SC_DEFAULT,uint8_t spino = 1,uint8_t* extram=NULL); // 利用開始
     void end() {TNTSC->end();};  // 利用終了
@@ -168,11 +169,11 @@ class TTVout {
     void sp(uint16_t x, uint16_t y, uint8_t c) {
     #if BITBAND==1
       if (c==1)
-        _adr[_width*y+ (x&0xf8) +7 -(x&7)] = 1;
+        _adr[_width*y+ (x&0xfff8) +7 -(x&7)] = 1;
       else if (c==0)
-        _adr[_width*y+ (x&0xf8) +7 -(x&7)] = 0;
+        _adr[_width*y+ (x&0xfff8) +7 -(x&7)] = 0;
       else 
-        _adr[_width*y+ (x&0xf8) +7 -(x&7)] ^= 1;
+        _adr[_width*y+ (x&0xfff8) +7 -(x&7)] ^= 1;
     #else
       if (c==1)
         _screen[(x/8) + (y*_hres)] |= 0x80 >> (x&7);

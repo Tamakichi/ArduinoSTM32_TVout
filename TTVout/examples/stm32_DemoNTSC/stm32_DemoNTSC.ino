@@ -22,13 +22,18 @@ float cube3d[8][3] = {
   {xOff - cSize,yOff - cSize,zOff + cSize},
   {xOff + cSize,yOff - cSize,zOff + cSize}
 };
-unsigned char cube2d[8][2];
 
+uint16_t cube2d[8][2];
 
 void setup() {
   Serial.begin();
   delay(1000);
+  //TV.adjust(2);  // NTSC垂直同期補正（スクロールする場合）
+  //TV.begin(SC_448x216);
+  //TV.begin(SC_448x108);
+  //TV.begin(SC_224x216);
   TV.begin(SC_224x108);
+  //TV.begin(SC_112x108);
   TV.select_font(font6x8);
 
   intro();
@@ -159,8 +164,8 @@ unsigned char w,l,wb;
 void printcube() {
   //calculate 2d points
   for(byte i = 0; i < 8; i++) {
-    cube2d[i][0] = (unsigned char)((cube3d[i][0] * view_plane / cube3d[i][2]) + (TV.hres()/2));
-    cube2d[i][1] = (unsigned char)((cube3d[i][1] * view_plane / cube3d[i][2]) + (TV.vres()/2));
+    cube2d[i][0] = (uint16_t)((cube3d[i][0] * view_plane / cube3d[i][2]) + (TV.hres()/2));
+    cube2d[i][1] = (uint16_t)((cube3d[i][1] * view_plane / cube3d[i][2]) + (TV.vres()/2));
   }
   TV.delay_frame(1);
   TV.clear_screen();
