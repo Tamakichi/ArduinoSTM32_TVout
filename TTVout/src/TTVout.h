@@ -41,6 +41,7 @@ application as possible.
 // 更新日 2017/06/25, NTSCオブジェクトを動的生成に修正,NTSCの外部メモリ領域指定対応
 // 更新日 2017/11/18, hres(),hres()の戻り値をint16_tに変更
 // 更新日 2018/08/03, sp()のビットバンド計算ミス修正
+// 更新日 2018/08/05, adjust()関数に縦・横表示開始位置補正の引数追加
 //
 */
 
@@ -82,7 +83,7 @@ class TTVout {
     ~TTVout() {};                    // デストラクタ
     void begin(uint8_t mode=SC_DEFAULT,uint8_t spino = 1,uint8_t* extram=NULL); // 利用開始
     void end() {TNTSC->end();};  // 利用終了
-    void adjust(int16_t cnt) {TNTSC->adjust(cnt);} 
+    void adjust(int16_t cnt,int16_t hcnt=0, int16_t vcnt=0) {TNTSC->adjust(cnt,hcnt,vcnt);} 
     uint16_t hres() {return _width;} ;  // 画面横ドット数の取得
     uint16_t vres() {return _height;} ; // 画面縦ドット数の取得
     uint8_t* VRAM() {  return _screen;};// VRM先頭アドレス取得
